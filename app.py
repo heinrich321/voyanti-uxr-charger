@@ -63,7 +63,7 @@ def on_disconnect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     topic = msg.topic
     payload = float(msg.payload.decode())
-    elif topic == f"{MQTT_BASE_TOPIC}/set/altitude":
+    if topic == f"{MQTT_BASE_TOPIC}/set/altitude":
         module.set_altitude(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/group_id":
         module.set_group_id(int(payload), address)
