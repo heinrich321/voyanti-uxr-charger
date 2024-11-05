@@ -48,8 +48,6 @@ def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker")
     mqtt_connected = True
     client.subscribe([
-        (f"{MQTT_BASE_TOPIC}/set/voltage", 0),
-        (f"{MQTT_BASE_TOPIC}/set/altitude", 0),
         (f"{MQTT_BASE_TOPIC}/set/group_id", 0),
         (f"{MQTT_BASE_TOPIC}/set/output_voltage", 0),
         (f"{MQTT_BASE_TOPIC}/set/current_limit", 0)
@@ -139,8 +137,8 @@ def ha_discovery():
 
         # Define settable parameters as MQTT number entities
         settable_parameters = {
-            "Current Limit": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/set/current"},
-            "Output Voltage": {"min": 0, "max": 500, "step": 0.1, "unit": "V", "command_topic": f"{MQTT_BASE_TOPIC}/set/voltage"},
+            "Current Limit": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/set/current_limit"},
+            "Output Voltage": {"min": 0, "max": 500, "step": 0.1, "unit": "V", "command_topic": f"{MQTT_BASE_TOPIC}/set/output_voltage"},
             "Altitude": {"min": 1000, "max": 5000, "step": 100, "unit": "m", "command_topic": f"{MQTT_BASE_TOPIC}/set/altitude"}
         }
 
