@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
 # Copy code
-COPY app.py kehua.py run.sh ./
+COPY app.py uxr_charger_module.py run.sh ./
 RUN chmod a+x run.sh
 
 CMD [ "sh", "./run.sh" ]
