@@ -70,6 +70,7 @@ def on_message(client, userdata, msg):
         module.set_output_voltage(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/current_limit":
         percentage = payload / current_limit
+        print("Current limit set: {}%".format(percentage))
         module.set_current_limit(percentage, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/current":
         module.set_output_current(payload, address, group)
@@ -184,6 +185,7 @@ try:
         if current_limit is not None:
             percentage = current_limit / rated_current
             client.publish(f"{MQTT_BASE_TOPIC}/current_limit", percentage, retain=True)
+            print("Current limi get: {}%".format(current_limit))
         time.sleep(0.2)
 
         temp_dc_board = module.get_temperature_dc_board(address, group)
