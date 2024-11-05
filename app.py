@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
     elif topic == f"{MQTT_BASE_TOPIC}/set/output_voltage":
         module.set_output_voltage(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/current_limit":
-        percentage = payload / current_limit
+        percentage = payload / rated_current
         print("Current limit set: {}%".format(percentage))
         module.set_current_limit(percentage, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/current":
@@ -111,6 +111,8 @@ def ha_discovery():
         parameters = {
             "Module Voltage": {"device_class": "voltage", "unit": "V"},
             "Module Current": {"device_class": "current", "unit": "A"},
+            "Rated Current": {"device_class": "current", "unit": "A"},
+            "Rated Power": {"device_class": "current", "unit": "W"},
             "Current Limit": {"device_class": "current", "unit": "A"},
             "Temperature of DC Board": {"device_class": "temperature", "unit": "°C"},
             "Input Phase Voltage": {"device_class": "voltage", "unit": "V"},
@@ -248,7 +250,10 @@ try:
             client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
         time.sleep(0.2)
         # Wait for the scan interval before the next read
-        time.sleep(scan_interval)
+        # time.sleep(scan_interval)
+
+        client.publish(f"{MQTT_BASE_TOPIC}/rated_current", rated_current, retain=True)
+        client.publish(f"{MQTT_BASE_TOPIC}/rated_power", rated_power, retain=True)
 
 except KeyboardInterrupt:
     print("Stopping script...")
