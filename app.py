@@ -137,6 +137,29 @@ def ha_discovery():
             discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
+        # Define settable parameters as MQTT number entities
+        settable_parameters = {
+            "Current Limit": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/set/current"},
+            "Output Voltage": {"min": 0, "max": 500, "step": 0.1, "unit": "V", "command_topic": f"{MQTT_BASE_TOPIC}/set/voltage"},
+            "Altitude": {"min": 1000, "max": 5000, "step": 100, "unit": "m", "command_topic": f"{MQTT_BASE_TOPIC}/set/altitude"}
+        }
+
+        # Publish discovery messages for settable parameters
+        for param, details in settable_parameters.items():
+            discovery_payload = {
+                "name": param,
+                "unique_id": f"uxr_{param.replace(' ', '_').lower()}",
+                "command_topic": details["command_topic"],
+                "min": details["min"],
+                "max": details["max"],
+                "step": details["step"],
+                "unit_of_measurement": details["unit"],
+                "availability_topic": availability_topic,
+                "device": device
+            }
+            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/number/uxr/{param.replace(' ', '_').lower()}/config"
+            client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
+
         client.publish(availability_topic, "online", retain=True)
 
 # Main loop to continuously read parameters
