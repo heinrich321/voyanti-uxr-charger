@@ -208,4 +208,26 @@ try:
 
         temp_pfc_board = module.get_temperature_pfc_board(address, group)
         if temp_pfc_board is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp
+            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp_pfc_board, retain=True)
+        time.sleep(0.2)
+
+        input_power = module.get_input_power(address, group)
+        if input_power is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/input_power", input_power, retain=True)
+        time.sleep(0.2)
+
+        altitude_value = module.get_current_altitude_value(address, group)
+        if altitude_value is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/current_altitude", altitude_value, retain=True)
+        time.sleep(0.2)
+
+        input_mode = module.get_input_working_mode(address, group)
+        if input_mode is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
+        time.sleep(0.2)
+        # Wait for the scan interval before the next read
+        time.sleep(scan_interval)
+
+except KeyboardInterrupt:
+    print("Stopping script...")
+    exit_handler()
