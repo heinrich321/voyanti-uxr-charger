@@ -12,14 +12,12 @@ if os.path.exists('/data/options.json'):
     with open(r'/data/options.json') as file:
         config = json.load(file)
         print("Config: " + json.dumps(config))
-
 elif os.path.exists('uxr-dev\\config.yaml'):
     print("Loading config.yaml")
     with open(r'uxr-dev\\config.yaml') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)['options']
-        
 else:
-    sys.exit("No config file found") 
+    sys.exit("No config file found")
 
 # Configuration settings
 MQTT_BROKER = config['mqtt_host']
@@ -49,7 +47,14 @@ def on_connect(client, userdata, flags, rc):
     global mqtt_connected
     print("Connected to MQTT broker")
     mqtt_connected = True
-    client.subscribe([(f"{MQTT_BASE_TOPIC}/set/voltage", 0), (f"{MQTT_BASE_TOPIC}/set/current", 0)])
+    client.subscribe([
+        (f"{MQTT_BASE_TOPIC}/set/voltage", 0),
+        (f"{MQTT_BASE_TOPIC}/set/current", 0),
+        (f"{MQTT_BASE_TOPIC}/set/altitude", 0),
+        (f"{MQTT_BASE_TOPIC}/set/group_id", 0),
+        (f"{MQTT_BASE_TOPIC}/set/output_voltage", 0),
+        (f"{MQTT_BASE_TOPIC}/set/current_limit", 0)
+    ])
 
 def on_disconnect(client, userdata, flags, rc):
     global mqtt_connected
@@ -64,6 +69,14 @@ def on_message(client, userdata, msg):
         module.set_output_voltage(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/current":
         print(f"Setting current limit to {payload} A")
+        module.set_current_limit(payload, address, group)
+    elif topic == f"{MQTT_BASE_TOPIC}/set/altitude":
+        module.set_altitude(payload, address, group)
+    elif topic == f"{MQTT_BASE_TOPIC}/set/group_id":
+        module.set_group_id(int(payload), address)
+    elif topic == f"{MQTT_BASE_TOPIC}/set/output_voltage":
+        module.set_output_voltage(payload, address, group)
+    elif topic == f"{MQTT_BASE_TOPIC}/set/current_limit":
         module.set_current_limit(payload, address, group)
 
 # Initialize MQTT client
@@ -100,21 +113,22 @@ def ha_discovery():
 
         # Define all sensor parameters and publish discovery messages
         parameters = {
-            "Module Voltage": {"device_class": "voltage", "unit": "V", "value": None},
-            "Module Current": {"device_class": "current", "unit": "A", "value": None},
-            "Temperature of DC Board": {"device_class": "temperature", "unit": "°C", "value": None},
-            "Input Phase Voltage": {"device_class": "voltage", "unit": "V", "value": None},
-            "PFC0 Voltage": {"device_class": "voltage", "unit": "V", "value": None},
-            "PFC1 Voltage": {"device_class": "voltage", "unit": "V", "value": None},
-            "Panel Board Temperature": {"device_class": "temperature", "unit": "°C", "value": None},
-            "Voltage Phase A": {"device_class": "voltage", "unit": "V", "value": None},
-            "Voltage Phase B": {"device_class": "voltage", "unit": "V", "value": None},
-            "Voltage Phase C": {"device_class": "voltage", "unit": "V", "value": None},
-            "Temperature of PFC Board": {"device_class": "temperature", "unit": "°C", "value": None},
-            "Input Power": {"device_class": "power", "unit": "W", "value": None},
-            "Current Altitude": {"device_class": "none", "unit": "m", "value": None},
-            "Input Working Mode": {"device_class": "none", "unit": None, "value": None},
-            "Alarm Status": {"device_class": "none", "unit": None, "value": None},
+            "Module Voltage": {"device_class": "voltage", "unit": "V"},
+            "Module Current": {"device_class": "current", "unit": "A"},
+            "Current Limit": {"device_class": "current", "unit": "A"},
+            "Temperature of DC Board": {"device_class": "temperature", "unit": "°C"},
+            "Input Phase Voltage": {"device_class": "voltage", "unit": "V"},
+            "PFC0 Voltage": {"device_class": "voltage", "unit": "V"},
+            "PFC1 Voltage": {"device_class": "voltage", "unit": "V"},
+            "Panel Board Temperature": {"device_class": "temperature", "unit": "°C"},
+            "Voltage Phase A": {"device_class": "voltage", "unit": "V"},
+            "Voltage Phase B": {"device_class": "voltage", "unit": "V"},
+            "Voltage Phase C": {"device_class": "voltage", "unit": "V"},
+            "Temperature of PFC Board": {"device_class": "temperature", "unit": "°C"},
+            "Input Power": {"device_class": "power", "unit": "W"},
+            "Current Altitude": {"device_class": "none", "unit": "m"},
+            "Input Working Mode": {"device_class": "none", "unit": None},
+            "Alarm Status": {"device_class": "none", "unit": None}
         }
 
         for param, details in parameters.items():
@@ -127,12 +141,9 @@ def ha_discovery():
                 "device_class": details.get("device_class"),
                 "unit_of_measurement": details.get("unit"),
             }
-
-            # Publish to HA discovery topic
             discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
-        # Publish initial availability status
         client.publish(availability_topic, "online", retain=True)
 
 # Main loop to continuously read parameters
@@ -140,69 +151,61 @@ try:
     ha_discovery()
     while True:
         # Read and publish sensor data
-        voltage = module.read_value(0x01, address, group)
+        voltage = module.get_module_voltage(address, group)
         if voltage is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/module_voltage", voltage, retain=True)
+        time.sleep(0.2)
 
-        current = module.read_value(0x02, address, group)
+        current = module.get_module_current(address, group)
         if current is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/module_current", current, retain=True)
+        time.sleep(0.2)
 
-        temp_dc_board = module.read_value(0x04, address, group)
+        current_limit = module.get_module_current_limit(address, group)
+        if current_limit is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/current_limit", current_limit, retain=True)
+        time.sleep(0.2)
+
+        temp_dc_board = module.get_temperature_dc_board(address, group)
         if temp_dc_board is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_dc_board", temp_dc_board, retain=True)
+        time.sleep(0.2)
 
-        input_voltage = module.read_value(0x05, address, group)
+        input_voltage = module.get_input_phase_voltage(address, group)
         if input_voltage is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/input_phase_voltage", input_voltage, retain=True)
+        time.sleep(0.2)
 
-        pfc0_voltage = module.read_value(0x08, address, group)
+        pfc0_voltage = module.get_pfc0_voltage(address, group)
         if pfc0_voltage is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/pfc0_voltage", pfc0_voltage, retain=True)
+        time.sleep(0.2)
 
-        pfc1_voltage = module.read_value(0x0A, address, group)
+        pfc1_voltage = module.get_pfc1_voltage(address, group)
         if pfc1_voltage is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/pfc1_voltage", pfc1_voltage, retain=True)
+        time.sleep(0.2)
 
-        panel_temp = module.read_value(0x0B, address, group)
+        panel_temp = module.get_panel_board_temperature(address, group)
         if panel_temp is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/panel_board_temperature", panel_temp, retain=True)
+        time.sleep(0.2)
 
-        voltage_phase_a = module.read_value(0x0C, address, group)
+        voltage_phase_a = module.get_voltage_phase_a(address, group)
         if voltage_phase_a is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_a", voltage_phase_a, retain=True)
+        time.sleep(0.2)
 
-        voltage_phase_b = module.read_value(0x0D, address, group)
+        voltage_phase_b = module.get_voltage_phase_b(address, group)
         if voltage_phase_b is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_b", voltage_phase_b, retain=True)
+        time.sleep(0.2)
 
-        voltage_phase_c = module.read_value(0x0E, address, group)
+        voltage_phase_c = module.get_voltage_phase_c(address, group)
         if voltage_phase_c is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_c", voltage_phase_c, retain=True)
+        time.sleep(0.2)
 
-        temp_pfc_board = module.read_value(0x10, address, group)
+        temp_pfc_board = module.get_temperature_pfc_board(address, group)
         if temp_pfc_board is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp_pfc_board, retain=True)
-
-        input_power = module.read_value(0x48, address, group, is_float=False)
-        if input_power is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/input_power", input_power, retain=True)
-
-        altitude_value = module.read_value(0x4A, address, group, is_float=False)
-        if altitude_value is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/current_altitude", altitude_value, retain=True)
-
-        input_mode = module.read_value(0x4B, address, group, is_float=False)
-        if input_mode is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
-
-        # alarm_status = module.get_alarm_status(address, group)
-        # if alarm_status is not None:
-        #     client.publish(f"{MQTT_BASE_TOPIC}/alarm_status", alarm_status, retain=True)
-
-        # Wait before the next scan
-        time.sleep(scan_interval)
-
-except KeyboardInterrupt:
-    print("Stopping script...")
-    exit_handler()
+            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp
