@@ -7,13 +7,19 @@ import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
 
 # Load configuration from config.yaml
-config = {}
-if os.path.exists('config.yaml'):
+if os.path.exists('/data/options.json'):
+    print("Loading options.json")
+    with open(r'/data/options.json') as file:
+        config = json.load(file)
+        print("Config: " + json.dumps(config))
+
+elif os.path.exists('uxr-dev\\config.yaml'):
     print("Loading config.yaml")
-    with open('config.yaml') as file:
+    with open(r'uxr-dev\\config.yaml') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)['options']
+        
 else:
-    raise FileNotFoundError("No config.yaml file found")
+    sys.exit("No config file found") 
 
 # Configuration settings
 MQTT_BROKER = config['mqtt_host']
