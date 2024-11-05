@@ -196,9 +196,9 @@ try:
         if input_mode is not None:
             client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
 
-        alarm_status = module.get_alarm_status(address, group)
-        if alarm_status is not None:
-            client.publish(f"{MQTT_BASE_TOPIC}/alarm_status", alarm_status, retain=True)
+        # alarm_status = module.get_alarm_status(address, group)
+        # if alarm_status is not None:
+        #     client.publish(f"{MQTT_BASE_TOPIC}/alarm_status", alarm_status, retain=True)
 
         # Wait before the next scan
         time.sleep(scan_interval)
