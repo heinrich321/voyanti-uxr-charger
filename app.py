@@ -5,6 +5,7 @@ import yaml
 import atexit
 import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
+import threading
 
 # Load configuration from config.yaml
 if os.path.exists('/data/options.json'):
