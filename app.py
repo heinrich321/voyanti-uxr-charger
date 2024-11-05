@@ -49,7 +49,6 @@ def on_connect(client, userdata, flags, rc):
     mqtt_connected = True
     client.subscribe([
         (f"{MQTT_BASE_TOPIC}/set/voltage", 0),
-        (f"{MQTT_BASE_TOPIC}/set/current", 0),
         (f"{MQTT_BASE_TOPIC}/set/altitude", 0),
         (f"{MQTT_BASE_TOPIC}/set/group_id", 0),
         (f"{MQTT_BASE_TOPIC}/set/output_voltage", 0),
@@ -64,12 +63,6 @@ def on_disconnect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     topic = msg.topic
     payload = float(msg.payload.decode())
-    if topic == f"{MQTT_BASE_TOPIC}/set/voltage":
-        print(f"Setting voltage to {payload} V")
-        module.set_output_voltage(payload, address, group)
-    elif topic == f"{MQTT_BASE_TOPIC}/set/current":
-        print(f"Setting current limit to {payload} A")
-        module.set_current_limit(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/altitude":
         module.set_altitude(payload, address, group)
     elif topic == f"{MQTT_BASE_TOPIC}/set/group_id":
