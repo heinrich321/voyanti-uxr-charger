@@ -183,8 +183,8 @@ try:
 
         current_limit = module.get_module_current_limit(address, group)
         if current_limit is not None:
-            percentage = current_limit / rated_current
-            client.publish(f"{MQTT_BASE_TOPIC}/current_limit", percentage, retain=True)
+            current_limit = current_limit * rated_current
+            client.publish(f"{MQTT_BASE_TOPIC}/current_limit", current_limit, retain=True)
             print("Current limi get: {}%".format(current_limit))
         time.sleep(0.2)
 
