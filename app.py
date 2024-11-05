@@ -172,135 +172,87 @@ def ha_discovery():
 try:
     ha_discovery()
     while True:
-        try:
-            # Read and publish sensor data
-            voltage = module.get_module_voltage(address, group)
-            if voltage is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/module_voltage", voltage, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing module voltage: {e}")
+        # Read and publish sensor data
+        voltage = module.get_module_voltage(address, group)
+        if voltage is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/module_voltage", voltage, retain=True)
+        time.sleep(0.2)
 
-        try:
-            current = module.get_module_current(address, group)
-            if current is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/module_current", current, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing module current: {e}")
+        current = module.get_module_current(address, group)
+        if current is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/module_current", current, retain=True)
+        time.sleep(0.2)
 
-        try:
-            current_limit = module.get_module_current_limit(address, group)
-            if current_limit is not None:
-                current_limit = current_limit * rated_current
-                client.publish(f"{MQTT_BASE_TOPIC}/current_limit", current_limit, retain=True)
-                print(f"Current limit get: {current_limit}%")
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing current limit: {e}")
+        current_limit = module.get_module_current_limit(address, group)
+        if current_limit is not None:
+            current_limit = current_limit * rated_current
+            client.publish(f"{MQTT_BASE_TOPIC}/current_limit", current_limit, retain=True)
+            print("Current limi get: {}%".format(current_limit))
+        time.sleep(0.2)
 
-        try:
-            temp_dc_board = module.get_temperature_dc_board(address, group)
-            if temp_dc_board is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_dc_board", temp_dc_board, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing temperature of DC board: {e}")
+        temp_dc_board = module.get_temperature_dc_board(address, group)
+        if temp_dc_board is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_dc_board", temp_dc_board, retain=True)
+        time.sleep(0.2)
 
-        try:
-            input_voltage = module.get_input_phase_voltage(address, group)
-            if input_voltage is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/input_phase_voltage", input_voltage, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing input phase voltage: {e}")
+        input_voltage = module.get_input_phase_voltage(address, group)
+        if input_voltage is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/input_phase_voltage", input_voltage, retain=True)
+        time.sleep(0.2)
 
-        try:
-            pfc0_voltage = module.get_pfc0_voltage(address, group)
-            if pfc0_voltage is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/pfc0_voltage", pfc0_voltage, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing PFC0 voltage: {e}")
+        pfc0_voltage = module.get_pfc0_voltage(address, group)
+        if pfc0_voltage is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/pfc0_voltage", pfc0_voltage, retain=True)
+        time.sleep(0.2)
 
-        try:
-            pfc1_voltage = module.get_pfc1_voltage(address, group)
-            if pfc1_voltage is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/pfc1_voltage", pfc1_voltage, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing PFC1 voltage: {e}")
+        pfc1_voltage = module.get_pfc1_voltage(address, group)
+        if pfc1_voltage is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/pfc1_voltage", pfc1_voltage, retain=True)
+        time.sleep(0.2)
 
-        try:
-            panel_temp = module.get_panel_board_temperature(address, group)
-            if panel_temp is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/panel_board_temperature", panel_temp, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing panel board temperature: {e}")
+        panel_temp = module.get_panel_board_temperature(address, group)
+        if panel_temp is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/panel_board_temperature", panel_temp, retain=True)
+        time.sleep(0.2)
 
-        try:
-            voltage_phase_a = module.get_voltage_phase_a(address, group)
-            if voltage_phase_a is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_a", voltage_phase_a, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing voltage phase A: {e}")
+        voltage_phase_a = module.get_voltage_phase_a(address, group)
+        if voltage_phase_a is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_a", voltage_phase_a, retain=True)
+        time.sleep(0.2)
 
-        try:
-            voltage_phase_b = module.get_voltage_phase_b(address, group)
-            if voltage_phase_b is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_b", voltage_phase_b, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing voltage phase B: {e}")
+        voltage_phase_b = module.get_voltage_phase_b(address, group)
+        if voltage_phase_b is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_b", voltage_phase_b, retain=True)
+        time.sleep(0.2)
 
-        try:
-            voltage_phase_c = module.get_voltage_phase_c(address, group)
-            if voltage_phase_c is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_c", voltage_phase_c, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing voltage phase C: {e}")
+        voltage_phase_c = module.get_voltage_phase_c(address, group)
+        if voltage_phase_c is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/voltage_phase_c", voltage_phase_c, retain=True)
+        time.sleep(0.2)
 
-        try:
-            temp_pfc_board = module.get_temperature_pfc_board(address, group)
-            if temp_pfc_board is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp_pfc_board, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing temperature of PFC board: {e}")
+        temp_pfc_board = module.get_temperature_pfc_board(address, group)
+        if temp_pfc_board is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/temperature_of_pfc_board", temp_pfc_board, retain=True)
+        time.sleep(0.2)
 
-        try:
-            input_power = module.get_input_power(address, group)
-            if input_power is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/input_power", input_power, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing input power: {e}")
+        input_power = module.get_input_power(address, group)
+        if input_power is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/input_power", input_power, retain=True)
+        time.sleep(0.2)
 
-        try:
-            altitude_value = module.get_current_altitude_value(address, group)
-            if altitude_value is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/current_altitude", altitude_value, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing current altitude: {e}")
+        altitude_value = module.get_current_altitude_value(address, group)
+        if altitude_value is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/current_altitude", altitude_value, retain=True)
+        time.sleep(0.2)
 
-        try:
-            input_mode = module.get_input_working_mode(address, group)
-            if input_mode is not None:
-                client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"Error reading/publishing input working mode: {e}")
+        input_mode = module.get_input_working_mode(address, group)
+        if input_mode is not None:
+            client.publish(f"{MQTT_BASE_TOPIC}/input_working_mode", input_mode, retain=True)
+        time.sleep(0.2)
+        # Wait for the scan interval before the next read
 
-        # Publish static rated parameters
-        try:
-            client.publish(f"{MQTT_BASE_TOPIC}/rated_current", rated_current, retain=True)
-            client.publish(f"{MQTT_BASE_TOPIC}/rated_power", rated_power, retain=True)
-        except Exception as e:
-            print(f"Error publishing rated parameters: {e}")
+        client.publish(f"{MQTT_BASE_TOPIC}/rated_current", rated_current, retain=True)
+        client.publish(f"{MQTT_BASE_TOPIC}/rated_power", rated_power, retain=True)
 
 except KeyboardInterrupt:
     print("Stopping script...")
