@@ -193,7 +193,7 @@ try:
         with lock:
             current_limit = module.get_module_current_limit(address, group)
             if current_limit is not None:
-                current_limit = current_limit * rated_current
+                current_limit = round(current_limit * rated_current, 2)
                 client.publish(f"{MQTT_BASE_TOPIC}/current_limit", current_limit, retain=True)
                 print("Current limit get: {}%".format(current_limit))
         time.sleep(0.2)
