@@ -54,7 +54,7 @@ class UXRChargerModule:
         self.send_frame(arbitration_id, data)
         _, response_data = self.receive_frame()
         if response_data and response_data[0] == 0x41 and is_float == True:
-            return self.bytes_to_float(response_data[4:8])
+            return round(self.bytes_to_float(response_data[4:8]), 2)
         elif response_data and response_data[0] == 0x42 and is_float == False:
             return struct.unpack('>I', response_data[4:8])[0]
         return None
