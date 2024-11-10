@@ -175,10 +175,10 @@ def ha_discovery(address):
 
         # Define settable parameters as MQTT number entities
         settable_parameters = {
-            "SP Current Limit": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit"},
-            "SP Output Voltage": {"min": 0, "max": 500, "step": 0.1, "unit": "V", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage"},
-            "SP Output Current": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/current"},
-            "SP Altitude": {"min": 1000, "max": 5000, "step": 100, "unit": "m", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude"}
+            "Current Limit": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit"},
+            "Output Voltage": {"min": 0, "max": 500, "step": 0.1, "unit": "V", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage"},
+            "Output Current": {"min": 0, "max": rated_current, "step": 0.1, "unit": "A", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/current"},
+            "Altitude": {"min": 1000, "max": 5000, "step": 100, "unit": "m", "command_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude"}
         }
 
         # Publish discovery messages for settable parameters
