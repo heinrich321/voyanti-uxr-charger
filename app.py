@@ -116,7 +116,7 @@ def exit_handler():
     print("Script exiting")
     for address in uxr_modules:
         serial_no = uxr_modules[address]['serial_no']
-        client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/availability", "offline", retain=True)
+        client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
     client.loop_stop()
 
 atexit.register(exit_handler)
@@ -136,7 +136,7 @@ def ha_discovery(address):
         }
 
         # Base availability topic
-        availability_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/availability"
+        availability_topic = f"{MQTT_BASE_TOPIC}_{serial_no}/availability"
 
         # Define all sensor parameters and publish discovery messages
         parameters = {
@@ -170,7 +170,7 @@ def ha_discovery(address):
                 "device_class": details.get("device_class"),
                 "unit_of_measurement": details.get("unit"),
             }
-            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr/{serial_no}/{param.replace(' ', '_').lower()}/config"
+            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
         # Define settable parameters as MQTT number entities
@@ -194,7 +194,7 @@ def ha_discovery(address):
                 "availability_topic": availability_topic,
                 "device": device
             }
-            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/uxr/{serial_no}/{param.replace(' ', '_').lower()}/config"
+            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
         client.publish(availability_topic, "online", retain=True)
