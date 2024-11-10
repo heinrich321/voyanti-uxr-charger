@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon"
 description: "Voyanti UXR Addon"
-version: "0.0.21"
+version: "0.0.22"
 slug: "uxr_dev"
 url: "https://github.com/heinrich321/voyanti-uxr-charger"
 init: false
@@ -37,7 +37,4 @@ schema:
   port: str
   scan_interval: int
   debug_output: int
-  module_address:
-    type: list
-    items:
-      type: int
+  module_address: [int]

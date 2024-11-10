@@ -7,6 +7,8 @@ import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
 import threading
 
+read_delay = 0.1
+
 # Load configuration from config.yaml
 if os.path.exists('/data/options.json'):
     print("Loading options.json")
@@ -41,11 +43,11 @@ uxr_modules = []
 
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
-    time.sleep(0.1)
+    time.sleep(read_delay)
     rated_power = module.get_rated_output_power(address, group)
-    time.sleep(0.1)
+    time.sleep(read_delay)
     rated_current = module.get_rated_output_current(address, group)
-    time.sleep(0.1)
+    time.sleep(read_delay)
     serial_no = str(module.get_serial_number(address, group))
     uxr_modules[address] = {
         "rated_power": rated_power,
@@ -210,13 +212,13 @@ try:
                 voltage = module.get_module_voltage(address, group)
                 if voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 current = module.get_module_current(address, group)
                 if current is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 current_limit = module.get_module_current_limit(address, group)
@@ -224,79 +226,79 @@ try:
                     current_limit = round(current_limit * rated_current, 2)
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit, retain=True)
                     print("Current limit get: {}%".format(current_limit))
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 temp_dc_board = module.get_temperature_dc_board(address, group)
                 if temp_dc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 input_voltage = module.get_input_phase_voltage(address, group)
                 if input_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 pfc0_voltage = module.get_pfc0_voltage(address, group)
                 if pfc0_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 pfc1_voltage = module.get_pfc1_voltage(address, group)
                 if pfc1_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 panel_temp = module.get_panel_board_temperature(address, group)
                 if panel_temp is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 voltage_phase_a = module.get_voltage_phase_a(address, group)
                 if voltage_phase_a is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 voltage_phase_b = module.get_voltage_phase_b(address, group)
                 if voltage_phase_b is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 voltage_phase_c = module.get_voltage_phase_c(address, group)
                 if voltage_phase_c is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 temp_pfc_board = module.get_temperature_pfc_board(address, group)
                 if temp_pfc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 input_power = module.get_input_power(address, group)
                 if input_power is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 altitude_value = module.get_current_altitude_value(address, group)
                 if altitude_value is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             with lock:
                 input_mode = module.get_input_working_mode(address, group)
                 if input_mode is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
-            time.sleep(0.1)
+            time.sleep(read_delay)
 
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current, retain=True)
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power, retain=True)
