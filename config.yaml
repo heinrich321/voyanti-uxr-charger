@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon"
 description: "Voyanti UXR Addon"
-version: "0.0.23"
+version: "0.0.24"
 slug: "uxr_dev"
 url: "https://github.com/heinrich321/voyanti-uxr-charger"
 init: false
@@ -25,7 +25,8 @@ options:
   port: "/dev/ttyACM0"
   scan_interval: 10
   debug_output: 0
-  module_address: [0x03]
+  module_address:
+    - 3
 schema:
   mqtt_host: str
   mqtt_port: int
