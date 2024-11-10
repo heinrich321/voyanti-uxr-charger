@@ -39,7 +39,7 @@ module = UXRChargerModule(channel=config['port'])
 # address = 0x03
 group = 0x05
 
-uxr_modules = []
+uxr_modules = {}
 
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
