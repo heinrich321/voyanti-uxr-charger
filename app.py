@@ -207,17 +207,22 @@ try:
         for address in uxr_modules:
             uxr_module = uxr_modules[address]
             serial_no = uxr_module['serial_no']
+            print("====================")
+            print(f"Serial: {serial_no}")
+            print(f"Address: {address}")
             # Use lock to ensure thread safety for each sensor reading and publishing
             with lock:
                 voltage = module.get_module_voltage(address, group)
                 if voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage, retain=True)
+                    print(f"module_voltage: {voltage}")
             time.sleep(read_delay)
 
             with lock:
                 current = module.get_module_current(address, group)
                 if current is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current, retain=True)
+                    print(f"module_current: {current}")
             time.sleep(read_delay)
 
             with lock:
@@ -225,7 +230,7 @@ try:
                 if current_limit is not None:
                     current_limit = round(current_limit * rated_current, 2)
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit, retain=True)
-                    print("Current limit get: {}%".format(current_limit))
+                    print(f"current_limit: {current_limit}")
             time.sleep(read_delay)
 
             with lock:
@@ -299,6 +304,7 @@ try:
                 if input_mode is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
             time.sleep(read_delay)
+
 
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current, retain=True)
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power, retain=True)
