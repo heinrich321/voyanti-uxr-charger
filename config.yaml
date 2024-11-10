@@ -37,4 +37,5 @@ schema:
   port: str
   scan_interval: int
   debug_output: int
-  module_address: [int]
+  module_address:
+    - int
