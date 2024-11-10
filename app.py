@@ -194,7 +194,7 @@ def ha_discovery(address):
                 "availability_topic": availability_topic,
                 "device": device
             }
-            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
+            discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
         client.publish(availability_topic, "online", retain=True)
