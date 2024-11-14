@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
 import threading
 
-read_delay = 0.1
+read_delay = 0.05
 
 # Load configuration from config.yaml
 if os.path.exists('/data/options.json'):
