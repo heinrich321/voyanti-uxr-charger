@@ -138,7 +138,7 @@ def ha_discovery(address):
         device = {
             "manufacturer": "UXR",
             "model": "ChargerModule",
-            "identifiers": ["uxr_charger"],
+            "identifiers": [f"uxr_charger_{serial_no}"],
             "name": f"UXR Charger {serial_no}"
         }
 
