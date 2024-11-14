@@ -32,6 +32,8 @@ mqtt_password = config['mqtt_password']
 scan_interval = config['scan_interval']
 ha_discovery_enabled = config['mqtt_ha_discovery']
 module_address_list = config['module_address']
+default_current_limit = config['default_current_limit']
+default_voltage = config['default_voltage']
 
 # Initialize the UXRChargerModule
 module = UXRChargerModule(channel=config['port'])
@@ -44,7 +46,7 @@ uxr_modules = {}
 def keep_alive():
     # Turn on
     for address in module_address_list:
-        rated_power = module.power_on_off(1, address, group)
+        module.power_on_off(1, address, group)
         time.sleep(read_delay)
 
 keep_alive()
@@ -63,6 +65,10 @@ for address in module_address_list:
         "rated_current": rated_current,
         "serial_no": serial_no
     }
+    time.sleep(read_delay)
+    module.set_current_limit(default_current_limit)
+    time.sleep(read_delay)
+    module.set_output_voltage(default_voltage)
     print(f"Address: {address} ")
     print(f"Rated Output Power: {rated_power} W")
     print(f"Rated Output Current: {rated_current} A")
