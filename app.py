@@ -41,6 +41,13 @@ group = 0x05
 
 uxr_modules = {}
 
+# Turn on
+for address in module_address_list:
+    rated_power = module.power_on_off(1, address, group)
+    time.sleep(read_delay)
+
+time.sleep(2)
+
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
     time.sleep(read_delay)
