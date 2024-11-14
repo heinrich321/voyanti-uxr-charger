@@ -66,15 +66,15 @@ for address in module_address_list:
         "serial_no": serial_no
     }
     time.sleep(read_delay)
-    module.set_current_limit(default_current_limit, address, group)
-    module.set_current_limit(default_current_limit, address, group)
-    time.sleep(read_delay)
-    module.set_output_voltage(default_voltage, address, group)
-    module.set_output_voltage(default_voltage, address, group)
+
     print(f"Address: {address} ")
     print(f"Rated Output Power: {rated_power} W")
     print(f"Rated Output Current: {rated_current} A")
     print(f"Serial No: {serial_no}")
+    # Set defaults
+    module.set_current_limit(default_current_limit/rated_current, address, group)
+    time.sleep(read_delay)
+    module.set_output_voltage(default_voltage, address, group)
 
 # MQTT Callbacks
 mqtt_connected = False
