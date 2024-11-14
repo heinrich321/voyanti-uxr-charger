@@ -50,7 +50,7 @@ def keep_alive():
         time.sleep(read_delay)
 
 keep_alive()
-time.sleep(2)
+time.sleep(3)
 
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
@@ -67,7 +67,9 @@ for address in module_address_list:
     }
     time.sleep(read_delay)
     module.set_current_limit(default_current_limit, address, group)
+    module.set_current_limit(default_current_limit, address, group)
     time.sleep(read_delay)
+    module.set_output_voltage(default_voltage, address, group)
     module.set_output_voltage(default_voltage, address, group)
     print(f"Address: {address} ")
     print(f"Rated Output Power: {rated_power} W")
