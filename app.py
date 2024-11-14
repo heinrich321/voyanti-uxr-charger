@@ -244,72 +244,84 @@ try:
                 temp_dc_board = module.get_temperature_dc_board(address, group)
                 if temp_dc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board, retain=True)
+                    print(f"temperature_of_dc_board: {temp_dc_board}")
             time.sleep(read_delay)
 
             with lock:
                 input_voltage = module.get_input_phase_voltage(address, group)
                 if input_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage, retain=True)
+                    print(f"input_phase_voltage: {input_voltage}")
             time.sleep(read_delay)
 
             with lock:
                 pfc0_voltage = module.get_pfc0_voltage(address, group)
                 if pfc0_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage, retain=True)
+                    print(f"pfc0_voltage: {pfc0_voltage}")
             time.sleep(read_delay)
 
             with lock:
                 pfc1_voltage = module.get_pfc1_voltage(address, group)
                 if pfc1_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage, retain=True)
+                    print(f"pfc1_voltage: {pfc1_voltage}")
             time.sleep(read_delay)
 
             with lock:
                 panel_temp = module.get_panel_board_temperature(address, group)
                 if panel_temp is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp, retain=True)
+                    print(f"panel_board_temperature: {panel_temp}")
             time.sleep(read_delay)
 
             with lock:
                 voltage_phase_a = module.get_voltage_phase_a(address, group)
                 if voltage_phase_a is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a, retain=True)
+                    print(f"voltage_phase_a: {voltage_phase_a}")
             time.sleep(read_delay)
 
             with lock:
                 voltage_phase_b = module.get_voltage_phase_b(address, group)
                 if voltage_phase_b is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b, retain=True)
+                    print(f"voltage_phase_b: {voltage_phase_b}")
             time.sleep(read_delay)
 
             with lock:
                 voltage_phase_c = module.get_voltage_phase_c(address, group)
                 if voltage_phase_c is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c, retain=True)
+                    print(f"voltage_phase_c: {voltage_phase_c}")
             time.sleep(read_delay)
 
             with lock:
                 temp_pfc_board = module.get_temperature_pfc_board(address, group)
                 if temp_pfc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board, retain=True)
+                    print(f"temperature_of_pfc_board: {temp_pfc_board}")
             time.sleep(read_delay)
 
             with lock:
                 input_power = module.get_input_power(address, group)
                 if input_power is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power, retain=True)
+                    print(f"input_power: {input_power}")
             time.sleep(read_delay)
 
             with lock:
                 altitude_value = module.get_current_altitude_value(address, group)
                 if altitude_value is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value, retain=True)
+                    print(f"altitude_value: {altitude_value}")
             time.sleep(read_delay)
 
             with lock:
                 input_mode = module.get_input_working_mode(address, group)
                 if input_mode is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
+                    print(f"input_working_mode: {input_mode}")
             time.sleep(read_delay)
 
 
