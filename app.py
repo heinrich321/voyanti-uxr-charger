@@ -49,17 +49,38 @@ def keep_alive():
         module.power_on_off(1, address, group)
         time.sleep(read_delay)
 
+
+# Switch on chargers
 keep_alive()
+keep_alive()
+
+# Wait 3 seconds for startup
 time.sleep(3)
+
+# Function to read the serial number with retries
+def get_serial_number_with_retries(module, address, group):
+    for attempt in range(3):
+        serial_no = str(module.get_serial_number(address, group))
+        
+        if serial_no:  # If the serial number is successfully read
+            return serial_no
+        
+        # Log the attempt and wait before retrying
+        print(f"Attempt {attempt + 1} failed, retrying...")
+        time.sleep(read_delay)
+    
+    # If all attempts fail, return None or raise an exception
+    print("Failed to read serial number after 3 attempts.")
+    return None
 
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
+    serial_no = get_serial_number_with_retries(module, address, group)
     time.sleep(read_delay)
     rated_power = module.get_rated_output_power(address, group)
     time.sleep(read_delay)
     rated_current = module.get_rated_output_current(address, group)
     time.sleep(read_delay)
-    serial_no = str(module.get_serial_number(address, group))
     uxr_modules[address] = {
         "rated_power": rated_power,
         "rated_current": rated_current,
