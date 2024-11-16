@@ -148,7 +148,7 @@ def on_message(client, userdata, msg):
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current":
                 payload = float(msg.payload.decode())
                 module.set_output_current(payload, address, group)
-            elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/power_on_off":
+            elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/power":
                 payload = int(msg.payload.decode())
                 print(payload)
                 if payload:
