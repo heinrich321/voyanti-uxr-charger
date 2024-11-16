@@ -129,27 +129,29 @@ def on_disconnect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     with lock:
         topic = msg.topic
-        payload = float(msg.payload.decode())
         for address in uxr_modules:
             serial_no = uxr_modules[address]['serial_no']
             if topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude":
+                payload = float(msg.payload.decode())
                 module.set_altitude(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/group_id":
+                payload = float(msg.payload.decode())
                 module.set_group_id(int(payload), address)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage":
+                payload = float(msg.payload.decode())
                 module.set_output_voltage(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit":
+                payload = float(msg.payload.decode())
                 percentage = payload / rated_current
                 print("Current limit set: {} for {}%".format(percentage, serial_no))
                 module.set_current_limit(percentage, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current":
+                payload = float(msg.payload.decode())
                 module.set_output_current(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/enabled":
+                payload = int(msg.payload.decode())
                 print(payload)
-                if payload == "ON":
-                    module.power_on_off(1, address, group)
-                else:
-                    module.power_on_off(0, address, group)
+                module.power_on_off(payload, address, group)
 
 # Initialize MQTT client
 client = mqtt.Client()
@@ -257,10 +259,10 @@ def ha_discovery(address):
             "unique_id": unique_id,
             "state_topic": state_topic,
             "command_topic": command_topic,
-            "payload_on": "ON",
-            "payload_off": "OFF",
-            "state_on": "ONE",
-            "state_off": "OFF",
+            "payload_on": 1,
+            "payload_off": 0,
+            "state_on": 1,
+            "state_off": 0,
             "availability_topic": availability_topic,
             "device": device
         }
@@ -271,7 +273,7 @@ def ha_discovery(address):
 
         # Optionally publish the initial state
         state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/{switch_name.lower()}"
-        client.publish(state_topic, "ONE", retain=True)
+        client.publish(state_topic, 1, retain=True)
 
         client.publish(availability_topic, "online", retain=True)
 
