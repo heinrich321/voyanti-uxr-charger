@@ -146,7 +146,10 @@ def on_message(client, userdata, msg):
                 module.set_output_current(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/enabled":
                 print(payload)
-                module.power_on_off(payload, address, group)
+                if payload == "ON":
+                    module.power_on_off(1, address, group)
+                else:
+                    module.power_on_off(0, address, group)
 
 # Initialize MQTT client
 client = mqtt.Client()
@@ -254,10 +257,10 @@ def ha_discovery(address):
             "unique_id": unique_id,
             "state_topic": state_topic,
             "command_topic": command_topic,
-            "payload_on": 1,
-            "payload_off": 0,
-            "state_on": 1,
-            "state_off": 0,
+            "payload_on": "ON",
+            "payload_off": "OFF",
+            "state_on": "ONE",
+            "state_off": "OFF",
             "availability_topic": availability_topic,
             "device": device
         }
@@ -268,7 +271,7 @@ def ha_discovery(address):
 
         # Optionally publish the initial state
         state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/{switch_name.lower()}"
-        client.publish(state_topic, 1, retain=True)
+        client.publish(state_topic, "ONE", retain=True)
 
         client.publish(availability_topic, "online", retain=True)
 
