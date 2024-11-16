@@ -52,7 +52,7 @@ def turn_on():
     for i in range(0, 5):
         time.sleep(1)
         for address in module_address_list:
-            module.power_on_off(1, address, group)
+            module.power_on_off(0x00000000, address, group)
             time.sleep(READ_DELAY)
 
 # Switch on chargers
@@ -150,7 +150,6 @@ def on_message(client, userdata, msg):
                 module.set_output_current(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/power":
                 payload = int(msg.payload.decode())
-                print(payload)
                 if payload:
                     module.power_on_off(0x00000000, address, group)
                 else:
