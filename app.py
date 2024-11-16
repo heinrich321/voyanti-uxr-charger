@@ -74,7 +74,7 @@ def get_serial_number_with_retries(module, address, group):
     
     # If all attempts fail, return None or raise an exception
     print("Failed to read serial number after 3 attempts.")
-    return None
+    raise ValueError("Failed to read serial number after 3 attempts.")
 
 
 # Loop through each address in the list and create an entry in the devices dictionary
