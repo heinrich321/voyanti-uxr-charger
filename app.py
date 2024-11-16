@@ -154,6 +154,8 @@ def on_message(client, userdata, msg):
                     module.power_on_off(0x00000000, address, group)
                 else:
                     module.power_on_off(0x00010000, address, group)
+                power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/power"
+                client.publish(power_topic, payload, retain=True)
 
 # Initialize MQTT client
 client = mqtt.Client()
