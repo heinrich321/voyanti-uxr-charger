@@ -152,9 +152,9 @@ def on_message(client, userdata, msg):
                 payload = int(msg.payload.decode())
                 print(payload)
                 if payload:
-                    module.power_on_off(0x00010000, address, group)
-                else:
                     module.power_on_off(0x00000000, address, group)
+                else:
+                    module.power_on_off(0x00010000, address, group)
 
 # Initialize MQTT client
 client = mqtt.Client()

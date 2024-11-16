@@ -79,7 +79,7 @@ class UXRChargerModule:
 
         # Construct the data payload
         data = [0x03, 0x00, 0x00, register] + value_bytes
-        print(data)
+        print(" ".join(f"0x{byte:02X}" for byte in data))
         # Generate the CAN arbitration ID
         arbitration_id = self.generate_can_arbitration_id(self.protno, 1, address, self.source_address, group)
         # Send the frame
