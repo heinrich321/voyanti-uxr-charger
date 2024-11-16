@@ -151,7 +151,10 @@ def on_message(client, userdata, msg):
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/enabled":
                 payload = int(msg.payload.decode())
                 print(payload)
-                module.power_on_off(payload, address, group)
+                if payload:
+                    module.power_on_off(0x00010000, address, group)
+                else:
+                    module.power_on_off(0x00000000, address, group)
 
 # Initialize MQTT client
 client = mqtt.Client()
