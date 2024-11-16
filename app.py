@@ -117,7 +117,7 @@ def on_connect(client, userdata, flags, rc):
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/current", 0),
-            (f"{MQTT_BASE_TOPIC}/{serial_no}/set/enabled", 0)
+            (f"{MQTT_BASE_TOPIC}/{serial_no}/set/power_on_off", 0)
         ])
 
 def on_disconnect(client, userdata, flags, rc):
@@ -148,7 +148,7 @@ def on_message(client, userdata, msg):
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current":
                 payload = float(msg.payload.decode())
                 module.set_output_current(payload, address, group)
-            elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/enabled":
+            elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/power_on_off":
                 payload = int(msg.payload.decode())
                 print(payload)
                 if payload:
@@ -252,9 +252,9 @@ def ha_discovery(address):
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
 
-        switch_name = "enabled"
+        switch_name = "power_on_off"
         command_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/set/{switch_name.lower()}"
-        state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/{switch_name.lower()}"
+        state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/{switch_name.lower()}"
         unique_id = f"uxr_{serial_no}_{switch_name.lower()}"
 
         discovery_payload = {
