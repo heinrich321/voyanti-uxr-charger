@@ -74,12 +74,14 @@ def get_serial_number_with_retries(module, address, group):
     
     # If all attempts fail, return None or raise an exception
     print("Failed to read serial number after 3 attempts.")
-    raise ValueError("Failed to read serial number after 3 attempts.")
+    return None
 
 
 # Loop through each address in the list and create an entry in the devices dictionary
 for address in module_address_list:
     serial_no = get_serial_number_with_retries(module, address, group)
+    if serial_no == None:
+        raise ValueError("Failed to read serial number after 3 attempts.")
     time.sleep(READ_DELAY)
     rated_power = module.get_rated_output_power(address, group)
     time.sleep(READ_DELAY)
