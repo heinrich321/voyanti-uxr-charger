@@ -274,7 +274,7 @@ def ha_discovery(address):
         client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
         # Optionally publish the initial state
-        state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/{switch_name.lower()}"
+        state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/{switch_name.lower()}"
         client.publish(state_topic, 1, retain=True)
 
         client.publish(availability_topic, "online", retain=True)
@@ -399,7 +399,7 @@ try:
                         power = 1
                     else:
                         power = 0
-                    power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/power"
+                    power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/power"
                     client.publish(power_topic, power, retain=True)
             time.sleep(READ_DELAY)
 
