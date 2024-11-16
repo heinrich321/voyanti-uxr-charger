@@ -117,7 +117,7 @@ def on_connect(client, userdata, flags, rc):
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/current", 0),
-            (f"{MQTT_BASE_TOPIC}/{serial_no}/set/power_on_off", 0)
+            (f"{MQTT_BASE_TOPIC}/{serial_no}/set/power", 0)
         ])
 
 def on_disconnect(client, userdata, flags, rc):
@@ -252,7 +252,7 @@ def ha_discovery(address):
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
 
 
-        switch_name = "power_on_off"
+        switch_name = "power"
         command_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/set/{switch_name.lower()}"
         state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/{switch_name.lower()}"
         unique_id = f"uxr_{serial_no}_{switch_name.lower()}"
