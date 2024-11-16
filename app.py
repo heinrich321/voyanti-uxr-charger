@@ -394,6 +394,13 @@ try:
                 if input_power is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power, retain=True)
                     print(f"input_power: {input_power}")
+                    power = 1
+                    if input_power > 0:
+                        power = 1
+                    else:
+                        power = 0
+                    power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/status/power"
+                    client.publish(power_topic, power, retain=True)
             time.sleep(READ_DELAY)
 
             with lock:
