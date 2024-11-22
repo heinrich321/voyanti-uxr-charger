@@ -1,0 +1,48 @@
+name: "Voyanti UXR Addon Gen"
+description: "Voyanti UXR Addon Gen"
+version: "0.3.1"
+slug: "uxr_gen"
+url: "https://github.com/heinrich321/voyanti-uxr-charger/gen_cluster"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+uart: true
+usb: true
+
+options:
+  mqtt_host: "10.0.0.132"
+  mqtt_port: 1883
+  mqtt_user: "mqtt-users"
+  mqtt_password: "mqtt-users"
+  mqtt_ha_discovery: true
+  mqtt_ha_discovery_topic: "homeassistant"
+  mqtt_base_topic: "uxr"
+  port: "/dev/ttyACM1"
+  scan_interval: 10
+  default_current_limit: 30
+  default_voltage: 775
+  debug_output: 0
+  module_address:
+    - 1
+    - 2
+    - 3
+schema:
+  mqtt_host: str
+  mqtt_port: int
+  mqtt_user: str
+  mqtt_password: str
+  mqtt_ha_discovery: bool
+  mqtt_ha_discovery_topic: str
+  mqtt_base_topic: str
+  port: str
+  scan_interval: int
+  debug_output: int
+  default_current_limit: int
+  default_voltage: int
+  module_address: 
+    - int
