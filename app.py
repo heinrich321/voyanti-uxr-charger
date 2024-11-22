@@ -6,17 +6,26 @@ import atexit
 import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
 import threading
+import logging
+from datetime import datetime
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Set logging level
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Format with timestamp
+    datefmt="%Y-%m-%d %H:%M:%S"  # Date format
+)
 
 READ_DELAY = 0.05
 
 # Load configuration from config.yaml
 if os.path.exists('/data/options.json'):
-    print("Loading options.json")
+    logging.info("Loading options.json")
     with open(r'/data/options.json') as file:
         config = json.load(file)
-        print("Config: " + json.dumps(config))
+        logging.info("Config: " + json.dumps(config))
 elif os.path.exists('uxr-dev\\config.yaml'):
-    print("Loading config.yaml")
+    logging.info("Loading config.yaml")
     with open(r'uxr-dev\\config.yaml') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)['options']
 else:
@@ -69,11 +78,11 @@ def get_serial_number_with_retries(module, address, group):
             return serial_no
         
         # Log the attempt and wait before retrying
-        print(f"Attempt {attempt + 1} failed, retrying...")
+        logging.error(f"Attempt {attempt + 1} failed, retrying...")
         time.sleep(READ_DELAY)
     
     # If all attempts fail, return None or raise an exception
-    print("Failed to read serial number after 3 attempts.")
+    logging.error("Failed to read serial number after 3 attempts.")
     return None
 
 
@@ -94,10 +103,10 @@ for address in module_address_list:
     }
     time.sleep(READ_DELAY)
 
-    print(f"Address: {address} ")
-    print(f"Rated Output Power: {rated_power} W")
-    print(f"Rated Output Current: {rated_current} A")
-    print(f"Serial No: {serial_no}")
+    logging.info(f"Address: {address} ")
+    logging.info(f"Rated Output Power: {rated_power} W")
+    logging.info(f"Rated Output Current: {rated_current} A")
+    logging.info(f"Serial No: {serial_no}")
     # Set defaults
     module.set_current_limit(default_current_limit/rated_current, address, group)
     time.sleep(READ_DELAY)
@@ -110,7 +119,7 @@ lock = threading.Lock()  # Create a lock
 
 def on_connect(client, userdata, flags, rc):
     global mqtt_connected
-    print("Connected to MQTT broker")
+    logging.info("Connected to MQTT broker")
     mqtt_connected = True
     for address in uxr_modules:
         serial_no = uxr_modules[address]['serial_no']
@@ -124,7 +133,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_disconnect(client, userdata, flags, rc):
     global mqtt_connected
-    print("Disconnected from MQTT broker")
+    logging.error("Disconnected from MQTT broker")
     mqtt_connected = False
 
 
@@ -145,7 +154,7 @@ def on_message(client, userdata, msg):
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit":
                 payload = float(msg.payload.decode())
                 percentage = payload / rated_current
-                print("Current limit set: {} for {}%".format(percentage, serial_no))
+                logging.info("Current limit set: {} for {}%".format(percentage, serial_no))
                 module.set_current_limit(percentage, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current":
                 payload = float(msg.payload.decode())
@@ -170,7 +179,7 @@ client.loop_start()
 
 # Clean up on exit
 def exit_handler():
-    print("Script exiting")
+    logging.error("Script exiting")
     for address in uxr_modules:
         serial_no = uxr_modules[address]['serial_no']
         client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
@@ -183,7 +192,7 @@ def ha_discovery(address):
     uxr_module = uxr_modules[address]
     serial_no = uxr_module['serial_no']
     if ha_discovery_enabled:
-        print("Publishing HA Discovery topics...")
+        logging.info("Publishing HA Discovery topics...")
         # Define device information
         device = {
             "manufacturer": "UXR",
@@ -291,16 +300,16 @@ try:
         for address in uxr_modules:
             uxr_module = uxr_modules[address]
             serial_no = uxr_module['serial_no']
-            print("====================")
-            print(f"Serial: {serial_no}")
-            print(f"Address: {address}")
+            logging.info("====================")
+            logging.info(f"Serial: {serial_no}")
+            logging.info(f"Address: {address}")
             # Use lock to ensure thread safety for each sensor reading and publishing
             with lock:
                 keep_alive()
                 voltage = module.get_module_voltage(address, group)
                 if voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage, retain=True)
-                    print(f"module_voltage: {voltage}")
+                    logging.info(f"module_voltage: {voltage}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -308,7 +317,7 @@ try:
                 current = module.get_module_current(address, group)
                 if current is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current, retain=True)
-                    print(f"module_current: {current}")
+                    logging.info(f"module_current: {current}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -317,7 +326,7 @@ try:
                 if current_limit is not None:
                     current_limit = round(current_limit * rated_current, 2)
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit, retain=True)
-                    print(f"current_limit: {current_limit}")
+                    logging.info(f"current_limit: {current_limit}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -325,7 +334,7 @@ try:
                 temp_dc_board = module.get_temperature_dc_board(address, group)
                 if temp_dc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board, retain=True)
-                    print(f"temperature_of_dc_board: {temp_dc_board}")
+                    logging.info(f"temperature_of_dc_board: {temp_dc_board}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -333,7 +342,7 @@ try:
                 input_voltage = module.get_input_phase_voltage(address, group)
                 if input_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage, retain=True)
-                    print(f"input_phase_voltage: {input_voltage}")
+                    logging.info(f"input_phase_voltage: {input_voltage}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -341,7 +350,7 @@ try:
                 pfc0_voltage = module.get_pfc0_voltage(address, group)
                 if pfc0_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage, retain=True)
-                    print(f"pfc0_voltage: {pfc0_voltage}")
+                    logging.info(f"pfc0_voltage: {pfc0_voltage}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -349,7 +358,7 @@ try:
                 pfc1_voltage = module.get_pfc1_voltage(address, group)
                 if pfc1_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage, retain=True)
-                    print(f"pfc1_voltage: {pfc1_voltage}")
+                    logging.info(f"pfc1_voltage: {pfc1_voltage}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -357,7 +366,7 @@ try:
                 panel_temp = module.get_panel_board_temperature(address, group)
                 if panel_temp is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp, retain=True)
-                    print(f"panel_board_temperature: {panel_temp}")
+                    logging.info(f"panel_board_temperature: {panel_temp}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -365,7 +374,7 @@ try:
                 voltage_phase_a = module.get_voltage_phase_a(address, group)
                 if voltage_phase_a is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a, retain=True)
-                    print(f"voltage_phase_a: {voltage_phase_a}")
+                    logging.info(f"voltage_phase_a: {voltage_phase_a}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -373,7 +382,7 @@ try:
                 voltage_phase_b = module.get_voltage_phase_b(address, group)
                 if voltage_phase_b is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b, retain=True)
-                    print(f"voltage_phase_b: {voltage_phase_b}")
+                    logging.info(f"voltage_phase_b: {voltage_phase_b}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -381,7 +390,7 @@ try:
                 voltage_phase_c = module.get_voltage_phase_c(address, group)
                 if voltage_phase_c is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c, retain=True)
-                    print(f"voltage_phase_c: {voltage_phase_c}")
+                    logging.info(f"voltage_phase_c: {voltage_phase_c}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -389,7 +398,7 @@ try:
                 temp_pfc_board = module.get_temperature_pfc_board(address, group)
                 if temp_pfc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board, retain=True)
-                    print(f"temperature_of_pfc_board: {temp_pfc_board}")
+                    logging.info(f"temperature_of_pfc_board: {temp_pfc_board}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -397,7 +406,7 @@ try:
                 input_power = module.get_input_power(address, group)
                 if input_power is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power, retain=True)
-                    print(f"input_power: {input_power}")
+                    logging.info(f"input_power: {input_power}")
                     power = 1
                     if input_power > 0:
                         power = 1
@@ -412,7 +421,7 @@ try:
                 altitude_value = module.get_current_altitude_value(address, group)
                 if altitude_value is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value, retain=True)
-                    print(f"altitude_value: {altitude_value}")
+                    logging.info(f"altitude_value: {altitude_value}")
             time.sleep(READ_DELAY)
 
             with lock:
@@ -420,15 +429,15 @@ try:
                 input_mode = module.get_input_working_mode(address, group)
                 if input_mode is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
-                    print(f"input_working_mode: {input_mode}")
+                    logging.info(f"input_working_mode: {input_mode}")
             time.sleep(READ_DELAY)
 
 
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current, retain=True)
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power, retain=True)
 except Exception as e:
-    print(f"An error occurred: {e}")
+    logging.error(f"An error occurred: {e}")
     exit_handler()
 except KeyboardInterrupt:
-    print("Stopping script...")
+    logging.error("Stopping script...")
     exit_handler()
