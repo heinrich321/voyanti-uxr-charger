@@ -190,13 +190,11 @@ class UXRChargerModule:
         """
         # Read the low field of the serial number
         low_field = self.read_value(0x54, address, group, is_float=False)
-        print(low_field)
         if low_field is None:
             return None
 
         # Read the high field of the serial number
         high_field = self.read_value(0x55, address, group, is_float=False)
-        print(high_field)
         if high_field is None:
             return None
 
