@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 from uxr_charger_module import UXRChargerModule
 import threading
 import logging
-from datetime import datetime
+import sys
 
 # Configure logging
 logging.basicConfig(
@@ -15,8 +15,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",  # Format with timestamp
     datefmt="%Y-%m-%d %H:%M:%S"  # Date format
 )
-
-READ_DELAY = 0.05
 
 # Load configuration from config.yaml
 if os.path.exists('/data/options.json'):
@@ -32,100 +30,35 @@ else:
     sys.exit("No config file found")
 
 # Configuration settings
+READ_DELAY = config['read_delay']
 MQTT_BROKER = config['mqtt_host']
 MQTT_PORT = config['mqtt_port']
 MQTT_BASE_TOPIC = config['mqtt_base_topic']
 MQTT_HA_DISCOVERY_TOPIC = config['mqtt_ha_discovery_topic']
-mqtt_user = config['mqtt_user']
-mqtt_password = config['mqtt_password']
-scan_interval = config['scan_interval']
-ha_discovery_enabled = config['mqtt_ha_discovery']
-module_address_list = config['module_address']
-default_current_limit = config['default_current_limit']
-default_voltage = config['default_voltage']
+MQTT_USER = config['mqtt_user']
+MQTT_PASSWORD = config['mqtt_password']
+SCAN_INTERVAL = config['scan_interval']
+HA_DISCOVERY_ENABLED = config['mqtt_ha_discovery']
+UXR_MODULES = config['modules']
+DEFAULT_CURRENT = config['default_current_limit']
+DEFAULT_VOLTAGE = config['default_voltage']
+PORT = config['port']
 
 # Initialize the UXRChargerModule
-module = UXRChargerModule(channel=config['port'])
+module = UXRChargerModule(channel=PORT)
 
-group = 0x05
-
-uxr_modules = {}
-
-def keep_alive():
-    # Turn on
-    for address in module_address_list:
-        module.get_input_power(address, group)
-        time.sleep(READ_DELAY)
-
-def turn_on():
-    for i in range(0, 5):
-        time.sleep(1)
-        for address in module_address_list:
-            module.power_on_off(0x00000000, address, group)
-            time.sleep(READ_DELAY)
-
-# Switch on chargers
-turn_on()
-# Wait 3 seconds for startup
-time.sleep(3)
-
-MAX_ATTEMPTS = 1500
-
-# Function to read the serial number with retries
-def get_serial_number_with_retries(module, address, group):
-    for attempt in range(MAX_ATTEMPTS):
-        serial_no = module.get_serial_number(address, group)
-        
-        if serial_no:  # If the serial number is successfully read
-            return str(serial_no)
-        
-        # Log the attempt and wait before retrying
-        logging.error(f"Attempt {attempt + 1} failed, retrying...")
-        time.sleep(READ_DELAY)
-    
-    # If all attempts fail, return None or raise an exception
-    logging.error(f"Failed to read serial number after {MAX_ATTEMPTS} attempts.")
-    return None
-
-
-# Loop through each address in the list and create an entry in the devices dictionary
-for address in module_address_list:
-    serial_no = get_serial_number_with_retries(module, address, group)
-    if serial_no == None:
-        raise ValueError("Failed to read serial number after 3 attempts.")
-    time.sleep(READ_DELAY)
-    rated_power = module.get_rated_output_power(address, group)
-    time.sleep(READ_DELAY)
-    rated_current = module.get_rated_output_current(address, group)
-    time.sleep(READ_DELAY)
-    uxr_modules[address] = {
-        "rated_power": rated_power,
-        "rated_current": rated_current,
-        "serial_no": serial_no
-    }
-    time.sleep(READ_DELAY)
-
-    logging.info(f"Address: {address} ")
-    logging.info(f"Rated Output Power: {rated_power} W")
-    logging.info(f"Rated Output Current: {rated_current} A")
-    logging.info(f"Serial No: {serial_no}")
-    # Set defaults
-    module.set_current_limit(default_current_limit/rated_current, address, group)
-    time.sleep(READ_DELAY)
-    logging.info(f"Setting default voltage for {serial_no} to {default_voltage}V")
-    module.set_output_voltage(default_voltage, address, group)
+initialised_modules = {}
 
 # MQTT Callbacks
 mqtt_connected = False
 
-lock = threading.Lock()  # Create a lock
 
 def on_connect(client, userdata, flags, rc):
     global mqtt_connected
     logging.info("Connected to MQTT broker")
     mqtt_connected = True
-    for address in uxr_modules:
-        serial_no = uxr_modules[address]['serial_no']
+    for module in UXR_MODULES:
+        serial_no = module['SERIAL_NR']
         client.subscribe([
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/group_id", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage", 0),
@@ -147,8 +80,16 @@ def on_disconnect(client, userdata, rc):
 def on_message(client, userdata, msg):
     with lock:
         topic = msg.topic
-        for address in uxr_modules:
-            serial_no = uxr_modules[address]['serial_no']
+        for uxr_module in UXR_MODULES:
+            serial_no = uxr_module['SERIAL_NR']
+            address = uxr_module['CANBUS_ID']
+            group = uxr_module['GROUP_ID']
+            if serial_no not in initialised_modules:
+                logging.error(f"Cannot set value for {serial_no} since it is not initialised")
+                return
+
+            # Fetch initialised values
+            rated_current = initialised_modules['rated_current']
             if topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude":
                 payload = float(msg.payload.decode())
                 module.set_altitude(payload, address, group)
@@ -181,25 +122,110 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_message = on_message
-client.username_pw_set(username=mqtt_user, password=mqtt_password)
+client.username_pw_set(username=MQTT_USER, password=MQTT_PASSWORD)
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
+
+def keep_alive():
+    # Turn on
+    for uxr_module in UXR_MODULES:
+        module.get_input_power(uxr_module['CANBUS_ID'], uxr_module['GROUP_ID'])
+        time.sleep(READ_DELAY)
+
+def turn_on():
+    for i in range(0, 5):
+        time.sleep(1)
+        for uxr_module in UXR_MODULES:
+            serial_no = uxr_module['SERIAL_NR']
+            address = uxr_module['CANBUS_ID']
+            logging.info(f"Switching on Serial: {serial_no} on Canbus ID: {address}")
+            module.power_on_off(0x00000000, address, uxr_module['GROUP_ID'])
+            time.sleep(READ_DELAY)
+
+
+logging.info(f"Waiting 5 seconds for power stability before switching on chargers")
+# Wait 5 seconds for startup
+time.sleep(5)
+# Switch on chargers
+logging.info(f"Switching on chargers...")
+turn_on()
+logging.info(f"Chargers switched on")
+
+MAX_ATTEMPTS = 1500
+
+# Function to read the serial number with retries
+def get_serial_number_with_retries(module, address, group):
+    for attempt in range(MAX_ATTEMPTS):
+        serial_no = module.get_serial_number(address, group)
+        
+        if serial_no:  # If the serial number is successfully read
+            return str(serial_no)
+        
+        # Log the attempt and wait before retrying
+        logging.error(f"Attempt {attempt + 1} failed, retrying...")
+        time.sleep(READ_DELAY)
+    
+    # If all attempts fail, return None or raise an exception
+    logging.error(f"Failed to read serial number after {MAX_ATTEMPTS} attempts.")
+    return None
+
+
+# Loop through each address in the list and create an entry in the devices dictionary
+for uxr_module in UXR_MODULES:
+    address = uxr_module['CANBUS_ID']
+    group = uxr_module['GROUP_ID']
+    expected_serial_no = uxr_module['SERIAL_NR']
+    serial_no = get_serial_number_with_retries(module, address, group)
+    if serial_no == None:
+        raise ValueError("Failed to read serial number after 3 attempts.")
+    if serial_no != expected_serial_no:
+        raise ValueError(f"Serial no {serial_no} found expected {expected_serial_no}")
+    time.sleep(READ_DELAY)
+    rated_power = module.get_rated_output_power(address, group)
+    time.sleep(READ_DELAY)
+    rated_current = module.get_rated_output_current(address, group)
+    time.sleep(READ_DELAY)
+    initialised_modules[serial_no] = {
+        "rated_power": rated_power,
+        "rated_current": rated_current,
+        "serial_no": serial_no
+    }
+    time.sleep(READ_DELAY)
+
+
+    logging.info(f"Serial No: {serial_no}")
+    logging.info(f"Address: {address} ")
+    logging.info(f"Rated Output Power: {rated_power} W")
+    logging.info(f"Rated Output Current: {rated_current} A")
+
+    # Set defaults
+    module.set_current_limit(DEFAULT_CURRENT/rated_current, address, group)
+    time.sleep(READ_DELAY)
+    logging.info(f"Setting default voltage for {serial_no} to {DEFAULT_VOLTAGE}V")
+    module.set_output_voltage(DEFAULT_VOLTAGE, address, group)
+
+
+
+lock = threading.Lock()  # Create a lock
+
+
+
 
 # Clean up on exit
 def exit_handler():
     logging.error("Script exiting")
-    for address in uxr_modules:
-        serial_no = uxr_modules[address]['serial_no']
+    for uxr_module in UXR_MODULES:
+        serial_no = uxr_module['SERIAL_NR']
         client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
     client.loop_stop()
 
 atexit.register(exit_handler)
 
 # HA Discovery Function
-def ha_discovery(address):
-    uxr_module = uxr_modules[address]
+def ha_discovery(serial_no):
+    uxr_module = initialised_modules[address]
     serial_no = uxr_module['serial_no']
-    if ha_discovery_enabled:
+    if HA_DISCOVERY_ENABLED:
         logging.info("Publishing HA Discovery topics...")
         # Define device information
         device = {
@@ -300,14 +326,17 @@ def ha_discovery(address):
 
         client.publish(availability_topic, "online", retain=True)
 
+
+
 # Main loop to continuously read parameters
 try:
-    for address in uxr_modules:
-        ha_discovery(address)
+    for uxr_mdules in UXR_MODULES:
+        ha_discovery(UXR_MODULES['CANBUS_ID'])
     while True:
-        for address in uxr_modules:
-            uxr_module = uxr_modules[address]
-            serial_no = uxr_module['serial_no']
+        for uxr_mdules in UXR_MODULES:
+            serial_no = uxr_module['SERIAL_NR']
+            address = uxr_module['CANBUS_ID']
+            group = uxr_module['GROUP_ID']
             logging.info("====================")
             logging.info(f"Serial: {serial_no}")
             logging.info(f"Address: {address}")

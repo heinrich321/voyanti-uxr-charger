@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon"
 description: "Voyanti UXR Addon"
-version: "0.2.29"
+version: "0.3.0"
 slug: "uxr_dev"
 url: "https://github.com/heinrich321/voyanti-uxr-charger"
 init: false
@@ -24,13 +24,23 @@ options:
   mqtt_base_topic: "uxr"
   port: "/dev/ttyACM0"
   scan_interval: 10
+  read_delay: 0.02
   default_current_limit: 30
   default_voltage: 775
   debug_output: 0
-  module_address:
-    - 1
-    - 2
-    - 3
+  modules:
+    - SERIAL_NR: "1"
+      HA_PREFIX: GRID
+      CANBUS_ID: 0
+      GROUP_ID: 5
+    - SERIAL_NR: "2"
+      HA_PREFIX: GRID
+      CANBUS_ID: 1
+      GROUP_ID: 5
+    - SERIAL_NR: "3"
+      HA_PREFIX: GRID
+      CANBUS_ID: 2
+      GROUP_ID: 5
 schema:
   mqtt_host: str
   mqtt_port: int
@@ -41,8 +51,13 @@ schema:
   mqtt_base_topic: str
   port: str
   scan_interval: int
+  read_delay: int
   debug_output: int
   default_current_limit: int
   default_voltage: int
-  module_address: 
-    - int
+  modules:
+    - SERIAL_NR: str
+      HA_PREFIX: str
+      CANBUS_ID: int
+      GROUP_ID: int
+      
