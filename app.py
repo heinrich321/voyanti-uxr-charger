@@ -224,8 +224,6 @@ atexit.register(exit_handler)
 
 # HA Discovery Function
 def ha_discovery(serial_no):
-    uxr_module = initialised_modules[address]
-    serial_no = uxr_module['serial_no']
     if HA_DISCOVERY_ENABLED:
         logging.info("Publishing HA Discovery topics...")
         # Define device information
@@ -332,7 +330,7 @@ def ha_discovery(serial_no):
 # Main loop to continuously read parameters
 try:
     for uxr_mdule in UXR_MODULES:
-        ha_discovery(uxr_mdule['CANBUS_ID'])
+        ha_discovery(uxr_mdule['SERIAL_NR'])
     while True:
         for uxr_mdule in UXR_MODULES:
             serial_no = uxr_module['SERIAL_NR']
