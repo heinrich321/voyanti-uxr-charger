@@ -179,7 +179,7 @@ for uxr_module in UXR_MODULES:
     expected_serial_no = uxr_module['SERIAL_NR']
     serial_no = get_serial_number_with_retries(module, address, group)
     if serial_no == None:
-        raise ValueError("Failed to read serial number after 3 attempts.")
+        raise ValueError(f"Failed to read serial number after {MAX_ATTEMPTS} attempts.")
     if serial_no != expected_serial_no:
         raise ValueError(f"Serial no {serial_no} found expected {expected_serial_no}")
     time.sleep(READ_DELAY)
