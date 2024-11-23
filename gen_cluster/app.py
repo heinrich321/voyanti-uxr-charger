@@ -112,6 +112,7 @@ for address in module_address_list:
     # Set defaults
     module.set_current_limit(default_current_limit/rated_current, address, group)
     time.sleep(READ_DELAY)
+    logging.info(f"Setting default voltage for {serial_no} to {default_voltage} A")
     module.set_output_voltage(default_voltage, address, group)
 
 # MQTT Callbacks
@@ -156,6 +157,7 @@ def on_message(client, userdata, msg):
                 module.set_group_id(int(payload), address)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage":
                 payload = float(msg.payload.decode())
+                logging.info(f"Setting output voltage for {serial_no} to {payload}")
                 module.set_output_voltage(payload, address, group)
             elif topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/current_limit":
                 payload = float(msg.payload.decode())

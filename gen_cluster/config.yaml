@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon Gen"
 description: "Voyanti UXR Addon Gen"
-version: "0.3.6"
+version: "0.3.7"
 slug: "uxr_gen"
 url: "https://github.com/heinrich321/voyanti-uxr-charger/gen_cluster"
 init: false
