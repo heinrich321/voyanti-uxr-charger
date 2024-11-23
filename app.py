@@ -72,10 +72,10 @@ time.sleep(3)
 # Function to read the serial number with retries
 def get_serial_number_with_retries(module, address, group):
     for attempt in range(3):
-        serial_no = str(module.get_serial_number(address, group))
+        serial_no = module.get_serial_number(address, group)
         
         if serial_no:  # If the serial number is successfully read
-            return serial_no
+            return str(serial_no)
         
         # Log the attempt and wait before retrying
         logging.error(f"Attempt {attempt + 1} failed, retrying...")
