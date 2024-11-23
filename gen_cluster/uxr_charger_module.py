@@ -37,7 +37,7 @@ class UXRChargerModule:
         self.bus.send(frame)
 
     def receive_frame(self):
-        message = self.bus.recv()
+        message = self.bus.recv(timeout=2)
         if message:
             return message.arbitration_id, message.data
         return None, None

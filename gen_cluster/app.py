@@ -131,7 +131,11 @@ def on_connect(client, userdata, flags, rc):
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/power", 0)
         ])
 
-def on_disconnect(client, userdata, flags, rc):
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        logging.error("Unexpected disconnection.")
+    else:
+        logging.error("Disconnected successfully.")
     global mqtt_connected
     logging.error("Disconnected from MQTT broker")
     mqtt_connected = False
