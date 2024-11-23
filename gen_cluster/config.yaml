@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon Gen"
 description: "Voyanti UXR Addon Gen"
-version: "0.3.4"
+version: "0.3.5"
 slug: "uxr_gen"
 url: "https://github.com/heinrich321/voyanti-uxr-charger/gen_cluster"
 init: false
@@ -13,6 +13,8 @@ arch:
 
 uart: true
 usb: true
+startup: "services"
+boot: "auto"
 
 options:
   mqtt_host: "10.0.0.132"
