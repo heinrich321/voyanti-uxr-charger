@@ -330,10 +330,10 @@ def ha_discovery(serial_no):
 
 # Main loop to continuously read parameters
 try:
-    for uxr_mdule in UXR_MODULES:
-        ha_discovery(uxr_mdule['SERIAL_NR'])
+    for uxr_module in UXR_MODULES:
+        ha_discovery(uxr_module['SERIAL_NR'])
     while True:
-        for uxr_mdule in UXR_MODULES:
+        for uxr_module in UXR_MODULES:
             serial_no = uxr_module['SERIAL_NR']
             address = uxr_module['CANBUS_ID']
             group = uxr_module['GROUP_ID']
