@@ -137,6 +137,7 @@ def turn_on():
     for i in range(0, 5):
         time.sleep(1)
         for uxr_module in UXR_MODULES:
+            client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
             serial_no = uxr_module['SERIAL_NR']
             address = uxr_module['CANBUS_ID']
             logging.info(f"Switching on Serial: {serial_no} on Canbus ID: {address}")
