@@ -112,7 +112,7 @@ for address in module_address_list:
     # Set defaults
     module.set_current_limit(default_current_limit/rated_current, address, group)
     time.sleep(READ_DELAY)
-    logging.info(f"Setting default voltage for {serial_no} to {default_voltage} A")
+    logging.info(f"Setting default voltage for {serial_no} to {default_voltage}V")
     module.set_output_voltage(default_voltage, address, group)
 
 # MQTT Callbacks
@@ -311,6 +311,7 @@ try:
             logging.info("====================")
             logging.info(f"Serial: {serial_no}")
             logging.info(f"Address: {address}")
+            alive = False
             # Use lock to ensure thread safety for each sensor reading and publishing
             with lock:
                 keep_alive()
@@ -318,6 +319,7 @@ try:
                 if voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage, retain=True)
                     logging.info(f"module_voltage: {voltage}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -326,6 +328,7 @@ try:
                 if current is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current, retain=True)
                     logging.info(f"module_current: {current}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -335,6 +338,7 @@ try:
                     current_limit = round(current_limit * rated_current, 2)
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit, retain=True)
                     logging.info(f"current_limit: {current_limit}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -343,6 +347,7 @@ try:
                 if temp_dc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board, retain=True)
                     logging.info(f"temperature_of_dc_board: {temp_dc_board}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -351,6 +356,7 @@ try:
                 if input_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage, retain=True)
                     logging.info(f"input_phase_voltage: {input_voltage}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -359,6 +365,7 @@ try:
                 if pfc0_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage, retain=True)
                     logging.info(f"pfc0_voltage: {pfc0_voltage}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -367,6 +374,7 @@ try:
                 if pfc1_voltage is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage, retain=True)
                     logging.info(f"pfc1_voltage: {pfc1_voltage}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -375,6 +383,7 @@ try:
                 if panel_temp is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp, retain=True)
                     logging.info(f"panel_board_temperature: {panel_temp}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -383,6 +392,7 @@ try:
                 if voltage_phase_a is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a, retain=True)
                     logging.info(f"voltage_phase_a: {voltage_phase_a}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -391,6 +401,7 @@ try:
                 if voltage_phase_b is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b, retain=True)
                     logging.info(f"voltage_phase_b: {voltage_phase_b}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -399,6 +410,7 @@ try:
                 if voltage_phase_c is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c, retain=True)
                     logging.info(f"voltage_phase_c: {voltage_phase_c}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -407,6 +419,7 @@ try:
                 if temp_pfc_board is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board, retain=True)
                     logging.info(f"temperature_of_pfc_board: {temp_pfc_board}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -422,6 +435,7 @@ try:
                         power = 0
                     power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/power"
                     client.publish(power_topic, power, retain=True)
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -430,6 +444,7 @@ try:
                 if altitude_value is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value, retain=True)
                     logging.info(f"altitude_value: {altitude_value}")
+                    alive = True
             time.sleep(READ_DELAY)
 
             with lock:
@@ -438,11 +453,16 @@ try:
                 if input_mode is not None:
                     client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
                     logging.info(f"input_working_mode: {input_mode}")
+                    alive = True
             time.sleep(READ_DELAY)
 
 
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current, retain=True)
             client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power, retain=True)
+            if alive:
+                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "online", retain=True)
+            else:
+                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
 except Exception as e:
     logging.error(f"An error occurred: {e}")
     exit_handler()

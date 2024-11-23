@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon"
 description: "Voyanti UXR Addon"
-version: "0.2.28"
+version: "0.2.29"
 slug: "uxr_dev"
 url: "https://github.com/heinrich321/voyanti-uxr-charger"
 init: false
