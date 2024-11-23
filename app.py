@@ -8,6 +8,7 @@ from uxr_charger_module import UXRChargerModule
 import threading
 import logging
 import sys
+import traceback
 
 # Configure logging
 logging.basicConfig(
@@ -494,6 +495,7 @@ try:
                 client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
 except Exception as e:
     logging.error(f"An error occurred: {e}")
+    logging.error("Traceback: %s", traceback.format_exc())
     exit_handler()
 except KeyboardInterrupt:
     logging.error("Stopping script...")
