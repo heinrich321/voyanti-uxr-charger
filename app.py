@@ -116,7 +116,7 @@ def on_message(client, userdata, msg):
                 else:
                     module.power_on_off(0x00010000, address, group)
                 power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/power"
-                client.publish(power_topic, payload, retain=True)
+                client.publish(power_topic, payload)
 
 # Initialize MQTT client
 client = mqtt.Client()
@@ -139,7 +139,7 @@ def turn_on():
         for uxr_module in UXR_MODULES:
             serial_no = uxr_module['SERIAL_NR']
             address = uxr_module['CANBUS_ID']
-            client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
+            client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
             logging.info(f"Switching on Serial: {serial_no} on Canbus ID: {address}")
             module.power_on_off(0x00000000, address, uxr_module['GROUP_ID'])
             time.sleep(READ_DELAY)
@@ -218,7 +218,7 @@ def exit_handler():
     logging.error("Script exiting")
     for uxr_module in UXR_MODULES:
         serial_no = uxr_module['SERIAL_NR']
-        client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
+        client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
     client.loop_stop()
 
 atexit.register(exit_handler)
@@ -322,9 +322,9 @@ def ha_discovery(serial_no):
 
         # Optionally publish the initial state
         state_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/{switch_name.lower()}"
-        client.publish(state_topic, 1, retain=True)
+        client.publish(state_topic, 1)
 
-        client.publish(availability_topic, "online", retain=True)
+        client.publish(availability_topic, "online")
 
 
 
@@ -346,7 +346,7 @@ try:
                 keep_alive()
                 voltage = module.get_module_voltage(address, group)
                 if voltage is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_voltage", voltage)
                     logging.info(f"module_voltage: {voltage}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -355,7 +355,7 @@ try:
                 keep_alive()
                 current = module.get_module_current(address, group)
                 if current is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/module_current", current)
                     logging.info(f"module_current: {current}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -365,7 +365,7 @@ try:
                 current_limit = module.get_module_current_limit(address, group)
                 if current_limit is not None:
                     current_limit = round(current_limit * rated_current, 2)
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_limit", current_limit)
                     logging.info(f"current_limit: {current_limit}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -374,7 +374,7 @@ try:
                 keep_alive()
                 temp_dc_board = module.get_temperature_dc_board(address, group)
                 if temp_dc_board is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_dc_board", temp_dc_board)
                     logging.info(f"temperature_of_dc_board: {temp_dc_board}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -383,7 +383,7 @@ try:
                 keep_alive()
                 input_voltage = module.get_input_phase_voltage(address, group)
                 if input_voltage is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_phase_voltage", input_voltage)
                     logging.info(f"input_phase_voltage: {input_voltage}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -392,7 +392,7 @@ try:
                 keep_alive()
                 pfc0_voltage = module.get_pfc0_voltage(address, group)
                 if pfc0_voltage is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc0_voltage", pfc0_voltage)
                     logging.info(f"pfc0_voltage: {pfc0_voltage}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -401,7 +401,7 @@ try:
                 keep_alive()
                 pfc1_voltage = module.get_pfc1_voltage(address, group)
                 if pfc1_voltage is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/pfc1_voltage", pfc1_voltage)
                     logging.info(f"pfc1_voltage: {pfc1_voltage}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -410,7 +410,7 @@ try:
                 keep_alive()
                 panel_temp = module.get_panel_board_temperature(address, group)
                 if panel_temp is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/panel_board_temperature", panel_temp)
                     logging.info(f"panel_board_temperature: {panel_temp}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -419,7 +419,7 @@ try:
                 keep_alive()
                 voltage_phase_a = module.get_voltage_phase_a(address, group)
                 if voltage_phase_a is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_a", voltage_phase_a)
                     logging.info(f"voltage_phase_a: {voltage_phase_a}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -428,7 +428,7 @@ try:
                 keep_alive()
                 voltage_phase_b = module.get_voltage_phase_b(address, group)
                 if voltage_phase_b is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_b", voltage_phase_b)
                     logging.info(f"voltage_phase_b: {voltage_phase_b}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -437,7 +437,7 @@ try:
                 keep_alive()
                 voltage_phase_c = module.get_voltage_phase_c(address, group)
                 if voltage_phase_c is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/voltage_phase_c", voltage_phase_c)
                     logging.info(f"voltage_phase_c: {voltage_phase_c}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -446,7 +446,7 @@ try:
                 keep_alive()
                 temp_pfc_board = module.get_temperature_pfc_board(address, group)
                 if temp_pfc_board is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/temperature_of_pfc_board", temp_pfc_board)
                     logging.info(f"temperature_of_pfc_board: {temp_pfc_board}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -455,7 +455,7 @@ try:
                 keep_alive()
                 input_power = module.get_input_power(address, group)
                 if input_power is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_power", input_power)
                     logging.info(f"input_power: {input_power}")
                     power = 1
                     if input_power > 0:
@@ -463,7 +463,7 @@ try:
                     else:
                         power = 0
                     power_topic = f"{MQTT_BASE_TOPIC}/{serial_no}/power"
-                    client.publish(power_topic, power, retain=True)
+                    client.publish(power_topic, power)
                     alive = True
             time.sleep(READ_DELAY)
 
@@ -471,7 +471,7 @@ try:
                 keep_alive()
                 altitude_value = module.get_current_altitude_value(address, group)
                 if altitude_value is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/current_altitude", altitude_value)
                     logging.info(f"altitude_value: {altitude_value}")
                     alive = True
             time.sleep(READ_DELAY)
@@ -480,18 +480,18 @@ try:
                 keep_alive()
                 input_mode = module.get_input_working_mode(address, group)
                 if input_mode is not None:
-                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode, retain=True)
+                    client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/input_working_mode", input_mode)
                     logging.info(f"input_working_mode: {input_mode}")
                     alive = True
             time.sleep(READ_DELAY)
 
 
-            client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current, retain=True)
-            client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power, retain=True)
+            client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_current", rated_current)
+            client.publish(f"{MQTT_BASE_TOPIC}/{serial_no}/rated_power", rated_power)
             if alive:
-                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "online", retain=True)
+                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "online")
             else:
-                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline", retain=True)
+                client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
 except Exception as e:
     logging.error(f"An error occurred: {e}")
     logging.error("Traceback: %s", traceback.format_exc())
