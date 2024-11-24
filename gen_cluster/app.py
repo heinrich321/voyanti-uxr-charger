@@ -90,7 +90,7 @@ def on_message(client, userdata, msg):
                 return
 
             # Fetch initialised values
-            rated_current = initialised_modules['rated_current']
+            rated_current = initialised_modules[serial_no]['rated_current']
             if topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude":
                 payload = float(msg.payload.decode())
                 module.set_altitude(payload, address, group)
