@@ -58,8 +58,8 @@ def on_connect(client, userdata, flags, rc):
     global mqtt_connected
     logging.info("Connected to MQTT broker")
     mqtt_connected = True
-    for module in UXR_MODULES:
-        serial_no = module['SERIAL_NR']
+    for uxr_module in UXR_MODULES:
+        serial_no = uxr_module['SERIAL_NR']
         client.subscribe([
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/group_id", 0),
             (f"{MQTT_BASE_TOPIC}/{serial_no}/set/output_voltage", 0),
