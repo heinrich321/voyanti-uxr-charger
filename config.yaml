@@ -1,6 +1,6 @@
 name: "Voyanti UXR Addon"
 description: "Voyanti UXR Addon"
-version: "1.0.7"
+version: "1.0.8"
 slug: "uxr_dev"
 url: "https://github.com/heinrich321/voyanti-uxr-charger"
 init: false
@@ -14,6 +14,7 @@ arch:
 uart: true
 usb: true
 startup: system
+boot: auto
 
 options:
   mqtt_host: "10.0.0.132"
