@@ -1,6 +1,7 @@
 import time
 import os
 import json
+from typing import Any
 import yaml
 import atexit
 import paho.mqtt.client as mqtt
@@ -45,10 +46,13 @@ DEFAULT_CURRENT = config['default_current_limit']
 DEFAULT_VOLTAGE = config['default_voltage']
 PORT = config['port']
 
+BRIDGE_AVAILABILITY_TOPIC = f"{MQTT_BASE_TOPIC}/bridge/availability"
+
 # Initialize the UXRChargerModule
 module = UXRChargerModule(channel=PORT)
 
-initialised_modules = {}
+
+initialised_device_configs: dict[str, dict[str, Any]] = {}
 
 # MQTT Callbacks
 mqtt_connected = False
@@ -58,6 +62,7 @@ def on_connect(client, userdata, flags, rc):
     global mqtt_connected
     logging.info("Connected to MQTT broker")
     mqtt_connected = True
+    client.publish(BRIDGE_AVAILABILITY_TOPIC, "online", retain=True)
     for uxr_module in UXR_MODULES:
         serial_no = uxr_module['SERIAL_NR']
         client.subscribe([
@@ -85,12 +90,12 @@ def on_message(client, userdata, msg):
             serial_no = uxr_module['SERIAL_NR']
             address = uxr_module['CANBUS_ID']
             group = uxr_module['GROUP_ID']
-            if serial_no not in initialised_modules:
+            if serial_no not in initialised_device_configs:
                 logging.error(f"Cannot set value for {serial_no} since it is not initialised")
                 return
 
             # Fetch initialised values
-            rated_current = initialised_modules[serial_no]['rated_current']
+            rated_current = initialised_device_configs[serial_no]['rated_current']
             if topic == f"{MQTT_BASE_TOPIC}/{serial_no}/set/altitude":
                 payload = float(msg.payload.decode())
                 module.set_altitude(payload, address, group)
@@ -124,6 +129,7 @@ client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_message = on_message
 client.username_pw_set(username=MQTT_USER, password=MQTT_PASSWORD)
+client.will_set(BRIDGE_AVAILABILITY_TOPIC, "offline", retain=True)
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
 
@@ -143,6 +149,16 @@ def turn_on():
             logging.info(f"Switching on Serial: {serial_no} on Canbus ID: {address}")
             module.power_on_off(0x00000000, address, uxr_module['GROUP_ID'])
             time.sleep(READ_DELAY)
+
+def turn_on_single(serial_no, address, group):
+    for i in range(0, 5):
+        time.sleep(1)
+        client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
+        logging.info(f"Switching on Serial: {serial_no} on Canbus ID: {address}")
+        module.power_on_off(0x00000000, address, group)
+        time.sleep(READ_DELAY)
+
+
 
 
 logging.info(f"Waiting 5 seconds for power stability before switching on chargers")
@@ -187,10 +203,10 @@ for uxr_module in UXR_MODULES:
     time.sleep(READ_DELAY)
     rated_current = module.get_rated_output_current(address, group)
     time.sleep(READ_DELAY)
-    initialised_modules[serial_no] = {
+    initialised_device_configs[serial_no] = {
         "rated_power": rated_power,
         "rated_current": rated_current,
-        "serial_no": serial_no
+        "serial_no": serial_no, 
     }
     time.sleep(READ_DELAY)
 
@@ -219,6 +235,7 @@ def exit_handler():
     for uxr_module in UXR_MODULES:
         serial_no = uxr_module['SERIAL_NR']
         client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
+    client.publish(BRIDGE_AVAILABILITY_TOPIC, "offline", retain=True)
     client.loop_stop()
 
 atexit.register(exit_handler)
@@ -237,6 +254,13 @@ def ha_discovery(serial_no):
 
         # Base availability topic
         availability_topic = f"{MQTT_BASE_TOPIC}_{serial_no}/availability"
+        availability_block = {
+            "availability": [
+                {"topic": availability_topic},
+                {"topic": BRIDGE_AVAILABILITY_TOPIC},
+            ],
+            "availability_mode": "all",
+        }
 
         # Define all sensor parameters and publish discovery messages
         parameters = {
@@ -265,10 +289,10 @@ def ha_discovery(serial_no):
                 "name": param,
                 "unique_id": f"uxr_{serial_no}_{param.replace(' ', '_').lower()}",
                 "state_topic": f"{MQTT_BASE_TOPIC}/{serial_no}/{param.replace(' ', '_').lower()}",
-                "availability_topic": availability_topic,
                 "device": device,
                 "device_class": details.get("device_class"),
                 "unit_of_measurement": details.get("unit"),
+                **availability_block,
             }
             discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/sensor/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
@@ -291,8 +315,8 @@ def ha_discovery(serial_no):
                 "max": details["max"],
                 "step": details["step"],
                 "unit_of_measurement": details["unit"],
-                "availability_topic": availability_topic,
-                "device": device
+                "device": device,
+                **availability_block,
             }
             discovery_topic = f"{MQTT_HA_DISCOVERY_TOPIC}/number/uxr_{serial_no}/{param.replace(' ', '_').lower()}/config"
             client.publish(discovery_topic, json.dumps(discovery_payload), retain=True)
@@ -312,8 +336,8 @@ def ha_discovery(serial_no):
             "payload_off": 0,
             "state_on": 1,
             "state_off": 0,
-            "availability_topic": availability_topic,
-            "device": device
+            "device": device,
+            **availability_block,
         }
 
         # Publish discovery message
@@ -492,6 +516,9 @@ try:
                 client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "online")
             else:
                 client.publish(f"{MQTT_BASE_TOPIC}_{serial_no}/availability", "offline")
+                with lock:
+                    turn_on_single(serial_no=serial_no, address=address, group=group)
+
 except Exception as e:
     logging.error(f"An error occurred: {e}")
     logging.error("Traceback: %s", traceback.format_exc())
